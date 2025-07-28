@@ -1306,19 +1306,22 @@
         }
 
         function filterQuestions() {
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            
-            if (searchTerm.trim() === '') {
-                currentQuestions = [...questionsData];
-            } else {
-                currentQuestions = questionsData.filter(q => 
-                    q.question.toLowerCase().includes(searchTerm) ||
-                    q.answer.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            renderQuestions(currentQuestions);
-        }
+    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    
+    if (searchTerm.trim() === '') {
+        currentQuestions = [...questionsData];
+    } else {
+        const searchTerms = searchTerm.trim().split(/\s+/);
+        currentQuestions = questionsData.filter(q => 
+            searchTerms.every(term => 
+                q.question.toLowerCase().includes(term) ||
+                q.answer.toLowerCase().includes(term)
+            )
+        );
+    }
+    
+    renderQuestions(currentQuestions);
+}
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
