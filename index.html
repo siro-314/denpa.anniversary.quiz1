@@ -33,6 +33,38 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
+        /* 広告スタイル */
+        .ad-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .ad-container.header-ad {
+            margin-bottom: 2rem;
+        }
+
+        .ad-container.search-bottom-ad {
+            margin: 1rem 0 2rem 0;
+        }
+
+        /* スマホ固定広告（将来用） */
+        .mobile-fixed-ad {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 5px;
+            text-align: center;
+        }
+
         .search-container {
             margin-bottom: 2rem;
         }
@@ -96,7 +128,25 @@
             margin-top: 3rem;
         }
 
+        /* PC/スマホ表示切り替え */
+        .pc-only {
+            display: block;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        /* レスポンシブ対応 */
         @media (max-width: 768px) {
+            .pc-only {
+                display: none;
+            }
+
+            .mobile-only {
+                display: block;
+            }
+
             .content {
                 padding: 1.5rem;
             }
@@ -108,38 +158,65 @@
             .question {
                 font-size: 1rem;
             }
+
+            .mobile-fixed-ad {
+                display: block; /* スマホで固定広告表示 */
+            }
+
+            body {
+                padding-bottom: 60px; /* 固定広告の分の余白 */
+            }
         }
     </style>
 </head>
 <body>
-
-
     <div class="container">
         <div class="content">
-                <div class="search-container">
-                    <input type="text" 
-                           id="searchBox" 
-                           class="search-box" 
-                           placeholder="🔍 問題文を入力して検索..."
-                           oninput="filterQuestions()">
-                </div>
-                
-                <div class="question-count" id="questionCount">
-                    見つかった問題: <span id="count">5</span>件
-                </div>
-
-                <div id="questionsContainer">
-                    <!-- 問題はJavaScriptで動的に表示 -->
-                </div>
+            <h1 style="text-align: center; color: #667eea; margin-bottom: 1rem; font-size: 2rem;">電波人間のRPG攻略サイト</h1>
+            
+            <!-- 広告枠2：ヘッダー下広告（PC用728x90） -->
+            <div class="ad-container header-ad pc-only">
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/s/b5cf261af35d4928258a4c8308db5053"></script>
+                <!-- admax -->
             </div>
+
+            <div class="search-container">
+                <input type="text" 
+                       id="searchBox" 
+                       class="search-box" 
+                       placeholder="🔍 問題文を入力して検索..."
+                       oninput="filterQuestions()">
+            </div>
+            
+            <!-- 広告枠1：検索ボックス下広告（現在実装・最優先） -->
+            <div class="ad-container search-bottom-ad">
+                <!-- admax -->
+                <script src="https://adm.shinobi.jp/s/caf66e857c8ebdf9b738085408970bea"></script>
+                <!-- admax -->
+            </div>
+            
+            <div class="question-count" id="questionCount">
+                見つかった問題: <span id="count">5</span>件
+            </div>
+
+            <div id="questionsContainer">
+                <!-- 問題はJavaScriptで動的に表示 -->
+            </div>
+        </div>
     </div>
 
-
+    <!-- 広告枠6：スマホ下部固定広告（320x50・収益性最高） -->
+    <div class="mobile-fixed-ad">
+        <!-- admax -->
+        <script src="https://adm.shinobi.jp/s/36ad7bb806e1029fbb854b7d31ead51b"></script>
+        <!-- admax -->
+    </div>
 
     <script>
-        // プレビュー用データ（5問のみ）
+        // プレビュー用データ - この部分にあなたの質問データをコピペしてください
         const questionsData = [
-    {
+             {
         "question": "「1日おきランダムボスチャレンジ」で水属性のボスが呼ぶモンスターは？",
         "answer": "たいでんフジツボ",
         "note": ""
@@ -1204,7 +1281,7 @@
         "answer": "緑",
         "note": ""
     }
-];
+        ];
 
         let currentQuestions = [...questionsData];
 
