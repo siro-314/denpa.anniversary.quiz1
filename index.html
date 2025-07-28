@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電波人間のRPG攻略サイト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .question-count {
+            margin: 1rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .question-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .question-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .question {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .answer {
+            color: #e53e3e;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .note {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 1.5rem;
+            }
+
+            .question-item {
+                padding: 1rem;
+            }
+
+            .question {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <div class="content">
+                <div class="search-container">
+                    <input type="text" 
+                           id="searchBox" 
+                           class="search-box" 
+                           placeholder="🔍 問題文を入力して検索..."
+                           oninput="filterQuestions()">
+                </div>
+                
+                <div class="question-count" id="questionCount">
+                    見つかった問題: <span id="count">5</span>件
+                </div>
+
+                <div id="questionsContainer">
+                    <!-- 問題はJavaScriptで動的に表示 -->
+                </div>
+            </div>
+    </div>
+
+
+
+    <script>
+        // プレビュー用データ（5問のみ）
+        const questionsData = [
+    {
+        "question": "「1日おきランダムボスチャレンジ」で水属性のボスが呼ぶモンスターは？",
+        "answer": "たいでんフジツボ",
+        "note": ""
+    },
+    {
+        "question": "「1日おきランダムボスチャレンジ」で水属性のボスとして登場するのは？",
+        "answer": "レイクタートル",
+        "note": ""
+    },
+    {
+        "question": "「1日おきランダムボスチャレンジ」で氷属性のボスとして登場するのは？",
+        "answer": "クリフイーター",
+        "note": ""
+    },
+    {
+        "question": "「1日おきランダムボスチャレンジ」で風属性のボスとして登場するのは？",
+        "answer": "ジャスティスロード",
+        "note": "要検証"
+    },
+    {
+        "question": "「1日おきランダムボスチャレンジ」で雷属性のボスとして登場するのは？",
+        "answer": "セピアナイト",
+        "note": ""
+    },
+    {
+        "question": "「アルビノザリガニ」を電波人間にあげるとしあわせはいくつあがる？",
+        "answer": "2あがる",
+        "note": ""
+    },
+    {
+        "question": "「ごちそうゲット！」のステージの中で最もレベルの高いモンスターは「ウィンドミスト」である？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "「ごちそうゲット！」のステージの中で最もレベルの高いモンスターは「ブルホーン」である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "「ジュークボックス」などの置物は配置すると実際に音楽を聞くことが出来る？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "「ジュエル埋蔵値」にて凍った電波人間を助けるために用いたものは？",
+        "answer": "やかん",
+        "note": ""
+    },
+    {
+        "question": "「デメキン」を電波人間をあげるとしあわせはいくつあがる？",
+        "answer": "1あがる",
+        "note": ""
+    },
+    {
+        "question": "「暗闇の洞窟」のステージでくらやみランプの最大時間は？",
+        "answer": "10分",
+        "note": ""
+    },
+    {
+        "question": "「異世界に通じる場所」にいる地底人が唱える呪文は？",
+        "answer": "アブラ、ツン、ツン、カブラー！！",
+        "note": ""
+    },
+    {
+        "question": "「幻帝のどうくつ」で出てこない属性のダンジョンはどれ？",
+        "answer": "火属性",
+        "note": ""
+    },
+    {
+        "question": "「試練の塔」にて戦う順番はビショップ→プラチナドラゴン→ルークである？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "「福引き屋」でふくびきするのにひつようなふくびきけんの枚数は5枚である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "「福引き屋」の3等の玉の色は？",
+        "answer": "赤色",
+        "note": ""
+    },
+    {
+        "question": "「福引き屋」の4等の玉の色は？",
+        "answer": "青色",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への闇の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "ファントムホース",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への火の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "ヒートマンモス",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への光の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "エンゼルライダー",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への水の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "オクトパイダー",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への土の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "つきくれきょじん",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への氷の試練」ステージで戦うボスモンスターの名前は？",
+        "answer": "アイスデーモン",
+        "note": ""
+    },
+    {
+        "question": "「冒険者への風の試練」のステージで戦うボスモンスターの名前は？",
+        "answer": "れっぷうりゅう",
+        "note": ""
+    },
+    {
+        "question": "2024年10月のイベントキャッチで登場した「クロ」が持っていたアンテナは？",
+        "answer": "むてきかいじょ",
+        "note": ""
+    },
+    {
+        "question": "2024年11月のイベントキャッチで登場した電波人間の色ではないものは？",
+        "answer": "白",
+        "note": ""
+    },
+    {
+        "question": "2024年12月のイベントキャッチで登場した「メリー」の頭の形は？",
+        "answer": "スター",
+        "note": "修正済み"
+    },
+    {
+        "question": "2024年8月のイベントキャッチで登場した「ヒトミ」の色として正しいのは？",
+        "answer": "むらさき",
+        "note": ""
+    },
+    {
+        "question": "2025年1月のイベントキャッチで登場した電波人間が持っていたアンテナは？",
+        "answer": "ぜんぶなおす",
+        "note": ""
+    },
+    {
+        "question": "2025年2月のイベントキャッチで登場した電波人間が持っていたアンテナではないのは？",
+        "answer": "みんなすこしこうふん",
+        "note": ""
+    },
+    {
+        "question": "2025年3月のイベントキャッチで登場した電波人間の名前でないものは？",
+        "answer": "ビー",
+        "note": ""
+    },
+    {
+        "question": "2025年4月のイベントキャッチで登場した電波人間の名前でないものは？",
+        "answer": "サクラ",
+        "note": ""
+    },
+    {
+        "question": "2025年5月のイベントキャッチで登場した電波人間の色でないものは？",
+        "answer": "青",
+        "note": ""
+    },
+    {
+        "question": "2025年6月のイベントキャッチで登場した電波人間の名前でないものは？",
+        "answer": "レイン",
+        "note": ""
+    },
+    {
+        "question": "2025年7月で登場していないアンテナは？",
+        "answer": "バケツのみず",
+        "note": ""
+    },
+    {
+        "question": "2025年9月のイベントキャッチで登場した電波人間が持っていたアンテナではないのは？",
+        "answer": "ひゃくボルト",
+        "note": ""
+    },
+    {
+        "question": "New電波人間のRPGの配信日は？",
+        "answer": "2024年7月22日",
+        "note": ""
+    },
+    {
+        "question": "Nintendo 3DSで配信されたタイトル「電波人間のRPG FREE！」の配信日は？",
+        "answer": "2014年7月23日",
+        "note": ""
+    },
+    {
+        "question": "NPCレンタル屋でレンタルできる「ウィード」について正しいのは？",
+        "answer": "1度だけHP1で耐えられる",
+        "note": ""
+    },
+    {
+        "question": "NPCレンタル屋でレンタルできる「カツーン」について正しいのは？",
+        "answer": "かんつう効果を与える",
+        "note": ""
+    },
+    {
+        "question": "NPCレンタル屋でレンタルできる「クレオメ」について正しいのは？",
+        "answer": "敵の能力上昇を防ぐ",
+        "note": ""
+    },
+    {
+        "question": "NPCレンタル屋でレンタルできる「ジェッソン」について正しいのは？",
+        "answer": "仲間をかばう",
+        "note": ""
+    },
+    {
+        "question": "NPCレンタル屋でレンタルできる「マッド」について正しいのは？",
+        "answer": "バトル中だんだん防御力が上がる",
+        "note": ""
+    },
+    {
+        "question": "NPCロッチェルの効果",
+        "answer": "ゴールドを増やす",
+        "note": ""
+    },
+    {
+        "question": "アイスクラブがもつ技の名前は？",
+        "answer": "クリスタルシールド",
+        "note": ""
+    },
+    {
+        "question": "アイテムを持ったままステージから脱出できるアイテムの名前はワープホールである？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "アルジェントについて間違っている記述は？",
+        "answer": "奥さんの名前はローズである",
+        "note": ""
+    },
+    {
+        "question": "いちげきのさおはクリティカル発生率をどれだけ上げる？",
+        "answer": "20%",
+        "note": ""
+    },
+    {
+        "question": "イベンステージ「悩める森の洋菓子店」で「ピヨ」が「スイーツのはこ」を隠した場所は？",
+        "answer": "たる",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「えとのへびとお正月の村」で「えとのへび」が右手に持っていたつえは何色？",
+        "answer": "赤",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「ニセモノの花嫁を暴け」で出てくる花嫁はニセモノ含めて何人？",
+        "answer": "4人",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「ハチのすを探せ！」で最も多くの「ハチのす」が必要な交換アイテムは？",
+        "answer": "？",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「ハチのすを探せ！」で最も多くの「ハチのす」が必要な交換アイテムは？",
+        "answer": "たんぽぽのアーチ",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「ハロウィン村の伝説のお菓子」に登場するボスは、全部で4種類である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「桜の森でハンティング！」の村でモンスターに変装した地底人が持っていた武器は？",
+        "answer": "けん",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「子ども新緑祭り」に出てくる少年の名前は？",
+        "answer": "ラルド",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「消えたチョコレートの謎」の隠しボスは、全部で何種類？",
+        "answer": "3種類",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「森の「きのこ」は誰のもの？」で森の「きのこ」を探していた地底人は全部で何人？",
+        "answer": "3人",
+        "note": ""
+    },
+    {
+        "question": "イベントステージ「避暑地の出来事」でダンジョンから地上へ戻れるアイテムの名前は？",
+        "answer": "おばけのおふだ",
+        "note": ""
+    },
+    {
+        "question": "イベントチップ交換所できんかはチップいくつで取引してる？",
+        "answer": "シルバーチップ1枚",
+        "note": ""
+    },
+    {
+        "question": "イベントチップ交換所でしゅっせいダケはチップいくつで取引してる？",
+        "answer": "シルバーチップ5枚",
+        "note": ""
+    },
+    {
+        "question": "イベントチップ交換所に存在しているブーストアイテムはどれ？",
+        "answer": "すばやさ+20",
+        "note": ""
+    },
+    {
+        "question": "エアロバイクを家に置くと住人が得られる経験値は10%増える？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "えいえんにみずいらずの色は赤色である？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "えいえんにみずいらずの色は緑色である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "えいきゅうしのあかしのレア度は3である？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "えいきゅうしのあかしのレア度は5である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "エクステリアの「じどうはんばいき」を置くと実際にジュースが買えるようになる？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "おうさまのははけいけんちゲットステージに登場する？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "おばけとうがらしの技「スパイスダンス」の効果は？",
+        "answer": "自分の攻撃力を上げる",
+        "note": ""
+    },
+    {
+        "question": "カジノコインを1000Gで買った時もらえるコインの枚数は？",
+        "answer": "112枚",
+        "note": ""
+    },
+    {
+        "question": "カジノコインを1Jで買った時得られるコイン量は合わせて550枚である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノの7が揃った時の倍率は50倍である",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットで7を3つそろえたときの配当は50倍である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットでぶどうを3つそろえたときの配当は3倍である？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットでメロンを3つ揃えたときの配当は10倍である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットで金塊を3つ揃えたときの配当は20倍である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットで水晶を3つそろえたときの配当は20倍である？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "カジノのスロットで存在しないマークは？",
+        "answer": "バナナ",
+        "note": ""
+    },
+    {
+        "question": "カジノ景品交換所でクリティカルブースト30%は陳列されている？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "カジノ景品交換所では「AP+2」が陳列されている？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "カジノ景品交換所では「あかしドロップ+100%」が陳列されている？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "カジノ景品交換所では「まいどかんぜんふっかつ」が陳列されている？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "ギガントードが持つ技の名前は？",
+        "answer": "？",
+        "note": ""
+    },
+    {
+        "question": "きゅうけつキャットの証はひとりを眠りにする？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "クリスマスステージのサンタがくれる装備ってなんですか？",
+        "answer": "サンタのてぶくろ",
+        "note": ""
+    },
+    {
+        "question": "けいけんちゲットステージに出てくるモンスターはどれ？",
+        "answer": "ネズぶたうさぎ",
+        "note": ""
+    },
+    {
+        "question": "コインゲットステージに出てくるモンスターはどれ？",
+        "answer": "ぎぞくキャット",
+        "note": ""
+    },
+    {
+        "question": "こうたは誰を訪ねてジュエル埋蔵地を訪れた？",
+        "answer": "宝石商",
+        "note": ""
+    },
+    {
+        "question": "こうたは誰を訪ねて温泉の村を訪れた？",
+        "answer": "デコレ職人",
+        "note": ""
+    },
+    {
+        "question": "ゴールド屋では1ジュエルを何ゴールドで交換してくれる？",
+        "answer": "5000G",
+        "note": ""
+    },
+    {
+        "question": "ここの最初のフロアに赤い風船はいくつあった？",
+        "answer": "4個",
+        "note": ""
+    },
+    {
+        "question": "ごちそうゲットステージに出てくるモンスターはどれ？",
+        "answer": "ファイアウッキー",
+        "note": ""
+    },
+    {
+        "question": "ごちそうゲットは毎週何曜日の15:00から開催している？",
+        "answer": "火曜日",
+        "note": ""
+    },
+    {
+        "question": "この作品の主人公の名前は？",
+        "answer": "こうた",
+        "note": ""
+    },
+    {
+        "question": "この中で1番価値が高いものは？",
+        "answer": "エメラルドのかたまり",
+        "note": ""
+    },
+    {
+        "question": "この中で火属性の技を持つモンスターは？",
+        "answer": "ラッシュボウ",
+        "note": ""
+    },
+    {
+        "question": "この中で回復技を持つモンスターは？",
+        "answer": "あかばなちょう",
+        "note": ""
+    },
+    {
+        "question": "この中で仲間を呼ぶことがあるモンスターは?",
+        "answer": "ダイころがし",
+        "note": ""
+    },
+    {
+        "question": "さくもつの「パイン」を食べるといくつしあわせがあがる？",
+        "answer": "10",
+        "note": ""
+    },
+    {
+        "question": "さくもつの「ぶどう」を食べるといくつしあわせ値があがる？",
+        "answer": "5あがる",
+        "note": ""
+    },
+    {
+        "question": "さくもつの「マスカット」を食べるといくつしあわせがあがる？",
+        "answer": "10",
+        "note": ""
+    },
+    {
+        "question": "サンダービーストが持つ技の名前は？",
+        "answer": "ライトニングタックル",
+        "note": ""
+    },
+    {
+        "question": "ジェモリについて間違っている記述は？",
+        "answer": "実家はジュエル埋蔵地にある",
+        "note": ""
+    },
+    {
+        "question": "ジュエルゲットステージに出てくるモンスターはどれ？",
+        "answer": "クリスタルマイマイ",
+        "note": ""
+    },
+    {
+        "question": "しんめグングンの値段は？",
+        "answer": "300G",
+        "note": ""
+    },
+    {
+        "question": "ずきんぶたばなのあかしは味方全体の攻撃力を上げる？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "ステージ「カジノの街」で手に入れた伝説の装備は？",
+        "answer": "でんせつのブーツ",
+        "note": ""
+    },
+    {
+        "question": "ステージ「とうがらし農家」でトウガラシを作らされていた村の名前は？",
+        "answer": "明るい農村",
+        "note": ""
+    },
+    {
+        "question": "ステージ「暗闇の洞窟」にて洞窟に入るために必要なものはどれ？",
+        "answer": "くらやみのランプ",
+        "note": ""
+    },
+    {
+        "question": "ステージ「海賊と水の神殿」でかいりゅうを倒した先の宝箱に入っているのは？",
+        "answer": "みずのしるし",
+        "note": ""
+    },
+    {
+        "question": "ステージ「風と塔の妖精」に建っている家は何階にある？",
+        "answer": "3階",
+        "note": ""
+    },
+    {
+        "question": "ステージ「風の塔と妖精」にて暗号のヒントが書かれている物は？",
+        "answer": "キノコ",
+        "note": ""
+    },
+    {
+        "question": "ステージ「風の塔と妖精」にて最上階にいない妖精の色は？",
+        "answer": "紫色",
+        "note": ""
+    },
+    {
+        "question": "ステージ2「温泉の村」にいる博士のお願いを聞いたときにもらえるものは？",
+        "answer": "こおりのおまもり",
+        "note": ""
+    },
+    {
+        "question": "ステージ2「温泉の村」の火山の地下1階で赤い宝箱の前で待ち構えていたのは？",
+        "answer": "ウッキー",
+        "note": ""
+    },
+    {
+        "question": "ステージ6「カジノの街」の発電所で戦うボスの名前は？",
+        "answer": "ライジーン",
+        "note": ""
+    },
+    {
+        "question": "ステージ7「海賊と水の神殿」",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "ステージ内で特別なジュエルパックを売ってくれる地底人の名前は？",
+        "answer": "やすお",
+        "note": ""
+    },
+    {
+        "question": "スマホ版New電波人間のRPG FREE！は3月10日に配信が開始された？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "スマホ版New電波人間のRPG FREE！は3月2日に配信が開始された？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "たいそうまっとをおいて住人が得られる経験値は10パーセントか",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "だんごボーイがもつ技の名前は？",
+        "answer": "ガトリングつぶて",
+        "note": ""
+    },
+    {
+        "question": "てっぺきのさおはさかなが糸を引く力をどの程度軽減する？",
+        "answer": "50%",
+        "note": ""
+    },
+    {
+        "question": "ドラゴンフルーツの幸せ上昇値はいくつですか？",
+        "answer": "15",
+        "note": ""
+    },
+    {
+        "question": "トランポリンを家に置くと住人が得られる経験値は20%増える？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "にゅうしのあかしは相手一人に痛恨ダメージを与える？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "ノーマルキャッチで、一度にまとめてキャッチできる電波人間の人数は？",
+        "answer": "8人",
+        "note": "修正済み"
+    },
+    {
+        "question": "バトルタワーは最大何ターンまで戦える？",
+        "answer": "10ターン",
+        "note": ""
+    },
+    {
+        "question": "ハンマーアンコウ使用する全体攻撃技の名称は？",
+        "answer": "ナイアガラプレス",
+        "note": "ん？"
+    },
+    {
+        "question": "ひとつの電波人間ボックスに入ることができる電波人間の数は12人である？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "ファフニールの技に含まれない属性は？",
+        "answer": "氷",
+        "note": ""
+    },
+    {
+        "question": "ブーストゲットステージに出てくるモンスターはどれ？",
+        "answer": "トゲトゲボーイ",
+        "note": ""
+    },
+    {
+        "question": "ブーストゲットは毎週何曜日の15:00から開催している？",
+        "answer": "月曜日",
+        "note": ""
+    },
+    {
+        "question": "プチジュエルゲットの敵",
+        "answer": "カエルシーフ",
+        "note": ""
+    },
+    {
+        "question": "ポーンが使う技",
+        "answer": "火炎斬",
+        "note": ""
+    },
+    {
+        "question": "マジックエイプの証は味方全員の攻撃力をあげる？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "まもりのさおの軽減率",
+        "answer": "20%",
+        "note": ""
+    },
+    {
+        "question": "マンボウの幸せ上昇値",
+        "answer": "3",
+        "note": ""
+    },
+    {
+        "question": "むしばがウィンクするとどんな異常状態が起こる？",
+        "answer": "きょうふ",
+        "note": ""
+    },
+    {
+        "question": "メイン3のステージ名は「ジュエル埋蔵地」？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "メインステージ10の名前は「異空間へ通じる場所」である",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "モンスター「ばけギツネ」が使ってくることのある呪文は？",
+        "answer": "すいみんの呪文",
+        "note": ""
+    },
+    {
+        "question": "モンスターコロシアム第1回のランク2モンスター",
+        "answer": "しれんのポーン",
+        "note": ""
+    },
+    {
+        "question": "モンスターコロシアム第2回のランク3のモンスターの名前はどれ？",
+        "answer": "おばけマロン5ごう",
+        "note": ""
+    },
+    {
+        "question": "モンスターコロシアム第3回のランク3モンスター",
+        "answer": "ネクストゲート",
+        "note": ""
+    },
+    {
+        "question": "よびよせのさおはどのくらいの確率でサイズアップする？",
+        "answer": "10%",
+        "note": ""
+    },
+    {
+        "question": "ルームランナーを家に置くと住人が得られる経験値は40％増える？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "レベル上限20の電波人間はしあわせを「30」まで上げることが出来る？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "レンタルNPCであるクインとはどこで出会える？",
+        "answer": "経験値ゲット",
+        "note": ""
+    },
+    {
+        "question": "レンタルNPCであるジェモリと最初に出会える場所は？",
+        "answer": "ステージ2「温泉の村」",
+        "note": ""
+    },
+    {
+        "question": "レンタルNPCであるナップとはどこで出会った？",
+        "answer": "ステージ9「暗闇の洞窟」",
+        "note": ""
+    },
+    {
+        "question": "レンタルNPCであるパララとはどこで出会った？",
+        "answer": "ステージ7「海賊と海の神殿」",
+        "note": ""
+    },
+    {
+        "question": "レンタルNPCであるポイズとどこのステージで出会える？",
+        "answer": "森の「きのこ」は誰のもの？",
+        "note": ""
+    },
+    {
+        "question": "ログインボーナス1日目にもらえるのはどれ？",
+        "answer": "300G",
+        "note": ""
+    },
+    {
+        "question": "ログインボーナスで3日目にもらえるのはどれ？",
+        "answer": "500G",
+        "note": ""
+    },
+    {
+        "question": "ログインボーナスで5日目にもらえるのはどれ？",
+        "answer": "300G",
+        "note": ""
+    },
+    {
+        "question": "ロックゲーターが吐くことがある息はどれ？",
+        "answer": "ほのお",
+        "note": ""
+    },
+    {
+        "question": "ロックゲーターのあかしは相手全員に火のダメージを与える？",
+        "answer": "x",
+        "note": "要検証"
+    },
+    {
+        "question": "ロデオマシンを家に置くと住人が得られる経験値は20%増える？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "黄色の電波人間の弱点はどれ？",
+        "answer": "土",
+        "note": ""
+    },
+    {
+        "question": "温泉の村には室内を含めて温泉はいくつあった？",
+        "answer": "5つ",
+        "note": ""
+    },
+    {
+        "question": "海賊の暗号",
+        "answer": "イカしてる！",
+        "note": ""
+    },
+    {
+        "question": "開けるとステージクリアになる宝箱の色は次の内どれ？",
+        "answer": "青色",
+        "note": ""
+    },
+    {
+        "question": "各ステージでジュエルを売ってくれる人の名前分かりますか？",
+        "answer": "ヤスオ",
+        "note": ""
+    },
+    {
+        "question": "銀色の電波人間が持つ耐性はどれ？",
+        "answer": "どく",
+        "note": ""
+    },
+    {
+        "question": "駆け出し火で戦うボス",
+        "answer": "ヒートマンモス",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への闇の試練にてBossではないモンスターは？",
+        "answer": "デビルバーサーカー",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への火の試練にてBossではないモンスターは？",
+        "answer": "かえんふくろう",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への水の試練にてBossではないモンスターは？",
+        "answer": "ギガントコブダイ",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への土の試練にてBossではないモンスターは？",
+        "answer": "アースドラコ",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への氷の試練にてBossではないモンスターは？",
+        "answer": "ホワイトベア",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への風の試練にてBossではないモンスターは？",
+        "answer": "カーニバルイーグル",
+        "note": ""
+    },
+    {
+        "question": "駆け出し者への雷の試練にてBossではないモンスターは？",
+        "answer": "サンダービー",
+        "note": ""
+    },
+    {
+        "question": "幻帝で最初のフロアでもらえるもの",
+        "answer": "テレポーター",
+        "note": ""
+    },
+    {
+        "question": "黒色の電波人間が持つ耐性はどれ？",
+        "answer": "ねむり",
+        "note": ""
+    },
+    {
+        "question": "最初にあなたの島にやってきた地底人の名前は？",
+        "answer": "カネコ",
+        "note": ""
+    },
+    {
+        "question": "最初にいじめをしていた電波人間の中に存在していない色の電波人間はどれ？",
+        "answer": "黒",
+        "note": ""
+    },
+    {
+        "question": "最初に使えるNPCレンタル",
+        "answer": "クレオメ",
+        "note": ""
+    },
+    {
+        "question": "試練の塔に出てくるキングが使用する「キングスソード」は何人に攻撃できる？",
+        "answer": "3人",
+        "note": ""
+    },
+    {
+        "question": "試練の塔の戦う順番はビショップ→シールドナイト→クイーンである",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "次のうち最初から使えるレンタルNPCは誰？",
+        "answer": "クレオメ",
+        "note": ""
+    },
+    {
+        "question": "次のうち途中で加入するレンタルNPCは誰？",
+        "answer": "ジェミニ",
+        "note": ""
+    },
+    {
+        "question": "次の内、「温泉の村」でデコレ職人から最初にもらう家はどれ？",
+        "answer": "でんぱにんげんのいえ",
+        "note": ""
+    },
+    {
+        "question": "次の内、せなかそうびで無いものはどれ？",
+        "answer": "りょうしのもり",
+        "note": ""
+    },
+    {
+        "question": "次の内、バトルが終わっても効果が続く状態異常は？",
+        "answer": "どく",
+        "note": ""
+    },
+    {
+        "question": "自分の島でジュエルを買うときジュエル32個買うとおまけはいくつ？",
+        "answer": "11個",
+        "note": ""
+    },
+    {
+        "question": "自分の島でジュエルを買うときジュエル6個買うとおまけはいくつ？",
+        "answer": "1個",
+        "note": ""
+    },
+    {
+        "question": "主人公である「こうた」にある特別な耐性はどれ？",
+        "answer": "とつぜんし",
+        "note": ""
+    },
+    {
+        "question": "出生を行うには、レベルが20以上必要である",
+        "answer": "x",
+        "note": "ん？直ってない"
+    },
+    {
+        "question": "存在しているパンジーの色は？",
+        "answer": "黄",
+        "note": ""
+    },
+    {
+        "question": "存在しているルピナスの色は？",
+        "answer": "桃",
+        "note": ""
+    },
+    {
+        "question": "存在してるバラの色",
+        "answer": "白",
+        "note": ""
+    },
+    {
+        "question": "対戦ポイント交換所でふくびきけんは何ポイントで交換できる？",
+        "answer": "180P",
+        "note": ""
+    },
+    {
+        "question": "宅配屋であかしを送るときジュエルが必要になるのはレア度がいくつから？",
+        "answer": "星3",
+        "note": "要検証"
+    },
+    {
+        "question": "知の調べをクリアするともらえるものは？",
+        "answer": "ようせいのたてごと",
+        "note": ""
+    },
+    {
+        "question": "地底人「カネコ」の口癖はイヒッである？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "地底人「カネコ」の口癖はウヒッである？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "電コロのランク1のチーム",
+        "answer": "とうこん",
+        "note": ""
+    },
+    {
+        "question": "電波人間コロシアムでランク2で登場するチームは？",
+        "answer": "ファイトガールズ",
+        "note": ""
+    },
+    {
+        "question": "電波人間コロシアムでランク3で登場するチームは？",
+        "answer": "どくどくゾンビーズ",
+        "note": "修正済み"
+    },
+    {
+        "question": "電波人間ので買う時の値段が一番安い種はパンジーである？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "電波人間のボックスで電波人間に話しかけた時に増える幸福度は4である",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "電波人間の島で「キズぐすり」を買う時の値段は50Gである？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "電波人間の島で「きずぐすりS」を買う時の値段は200Gである？",
+        "answer": "⚪︎",
+        "note": ""
+    },
+    {
+        "question": "電波人間の島のカジノ内でくるくる回っているきばコウモリの数は？",
+        "answer": "3体",
+        "note": ""
+    },
+    {
+        "question": "電波人間ボックスで電波人間に話しかけた時上昇するしあわせの値は？",
+        "answer": "4上がる",
+        "note": ""
+    },
+    {
+        "question": "島デコレのアンテナとうのサイズは2x2か",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "島に「せいれいのほこら」が建設された際、隣に併設されるデコレの名称は？",
+        "answer": "ようせいのはしら",
+        "note": ""
+    },
+    {
+        "question": "島のショップで買える一番安い種はポピー？",
+        "answer": "x",
+        "note": ""
+    },
+    {
+        "question": "白色の電波人間の弱点はどれ？",
+        "answer": "闇",
+        "note": ""
+    },
+    {
+        "question": "福引の5等の玉の色",
+        "answer": "緑",
+        "note": ""
+    }
+];
+
+        let currentQuestions = [...questionsData];
+
+        function renderQuestions(questions) {
+            const container = document.getElementById('questionsContainer');
+            const countElement = document.getElementById('count');
+            
+            countElement.textContent = questions.length;
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">該当する問題が見つかりませんでした。</p>';
+                return;
+            }
+
+            container.innerHTML = questions.map(q => `
+                <div class="question-item">
+                    <div class="question">${q.question}</div>
+                    <div class="answer">${q.answer}</div>
+                    ${q.note ? `<div class="note">${q.note}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function filterQuestions() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                currentQuestions = [...questionsData];
+            } else {
+                currentQuestions = questionsData.filter(q => 
+                    q.question.toLowerCase().includes(searchTerm) ||
+                    q.answer.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderQuestions(currentQuestions);
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderQuestions(currentQuestions);
+        });
+
+        // エンターキーでの検索も対応
+        document.getElementById('searchBox').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterQuestions();
+            }
+        });
+    </script>
+</body>
+</html>
